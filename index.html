@@ -1,0 +1,235 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Go9 by wangfakang</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-light.css">
+    <script src="javascripts/scale.fix.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1 class="header">Go9</h1>
+        <p class="header">golang arry as function parameters  </p>
+
+        <ul>
+          <li class="download"><a class="buttons" href="https://github.com/wangfakang/go9/zipball/master">Download ZIP</a></li>
+          <li class="download"><a class="buttons" href="https://github.com/wangfakang/go9/tarball/master">Download TAR</a></li>
+          <li><a class="buttons github" href="https://github.com/wangfakang/go9">View On GitHub</a></li>
+        </ul>
+
+        <p class="header">This project is maintained by <a class="header name" href="https://github.com/wangfakang">wangfakang</a></p>
+
+
+      </header>
+      <section>
+        <p><code>golang中的指针需要注意点:</code></p>
+
+<h1>
+<a id="1gonglang中的数组和c中的指针的区别比较大" class="anchor" href="#1gonglang%E4%B8%AD%E7%9A%84%E6%95%B0%E7%BB%84%E5%92%8Cc%E4%B8%AD%E7%9A%84%E6%8C%87%E9%92%88%E7%9A%84%E5%8C%BA%E5%88%AB%E6%AF%94%E8%BE%83%E5%A4%A7" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>1.gonglang中的数组和c中的指针的区别比较大:</h1>
+
+<pre><code>在golang中数组名不在是数组的首地址了,如下列子很明显:
+</code></pre>
+
+<pre lang="golang"><code>func use_array(args [5]int){
+    args[1] = 100;
+}
+
+func main() {
+    var args = [5]int{1, 2, 3, 4, 5};
+    use_array(args);
+    fmt.Println(args);
+}
+</code></pre>
+
+<p>最终还是输出: 1 2 3 4 5 </p>
+
+<p>所以在这里得使用指针:</p>
+
+<pre lang="golang"><code>func use_array(args *[5]int){
+    args[1] = 100;
+}
+
+func main() {
+    var args = [5]int{1, 2, 3, 4, 5};
+    use_array(&amp;args);
+    fmt.Println(args);
+}
+</code></pre>
+
+<p>这样才可以的，这点在和c语言比起来差别还是蛮大的．   </p>
+
+<h1>
+<a id="2还有个小的区别就是在结构体指针中" class="anchor" href="#2%E8%BF%98%E6%9C%89%E4%B8%AA%E5%B0%8F%E7%9A%84%E5%8C%BA%E5%88%AB%E5%B0%B1%E6%98%AF%E5%9C%A8%E7%BB%93%E6%9E%84%E4%BD%93%E6%8C%87%E9%92%88%E4%B8%AD" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>2.还有个小的区别就是在结构体指针中：</h1>
+
+<pre lang="golang"><code>type Point struct{
+    x int;
+    y int;
+}
+
+func main() {
+    var p *Point;
+    p = new(Point);
+    p.x = 1;
+    p.y = 2;
+
+    fmt.Printf("%p\n", p); // 地址
+
+    fmt.Printf("%p\n", &amp;(p.x));
+}
+</code></pre>
+
+<p>其实和c语言的区别就是在访问结构体指针成员变量的时候不使用-&gt;了．</p>
+
+<h1>
+<a id="3golang中函数调用参数全部是传值的包括-slicemapchan-在内所有类型而非传引用" class="anchor" href="#3golang%E4%B8%AD%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E5%8F%82%E6%95%B0%E5%85%A8%E9%83%A8%E6%98%AF%E4%BC%A0%E5%80%BC%E7%9A%84%E5%8C%85%E6%8B%AC-slicemapchan-%E5%9C%A8%E5%86%85%E6%89%80%E6%9C%89%E7%B1%BB%E5%9E%8B%E8%80%8C%E9%9D%9E%E4%BC%A0%E5%BC%95%E7%94%A8" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>3.golang中函数调用参数全部是传值的,包括 slice/map/chan 在内所有类型,而非传引用:</h1>
+
+<pre lang="golang"><code>func main() {
+        a := []int{1, 2, 3}
+        fmt.Println(a)
+        modifySlice(a)
+        fmt.Println(a)
+}
+func modifySlice(data []int) {
+
+        data = nil
+}
+</code></pre>
+
+<p>[1,2,3]
+[1,2,3]</p>
+
+<pre lang="golang"><code>func main() {
+        var arrgs = [5]int{1, 2, 3, 4, 5}; 
+
+        a := []int{1, 2, 3}
+        fmt.Printf("arry   %p\n", arrgs)
+        fmt.Printf("arry   %p\n", &amp;arrgs)
+        fmt.Printf("arry %p\n", &amp;arrgs[0])
+        fmt.Printf("%p\n", a)
+        fmt.Printf("%p\n", &amp;a) 
+        fmt.Printf("%p\n", &amp;a[0])
+        fmt.Println(a)
+        modifySliceData(a)
+        fmt.Println(a)
+}
+
+func modifySliceData(data []int) {
+        data[0] = 0 
+}
+</code></pre>
+
+<pre><code>arry   %!p([5]int=[1 2 3 4 5])
+arry   0xc20803a180
+arry 0xc20803a180
+0xc20801e040
+0xc20801e020
+0xc20801e040
+[1 2 3]
+[0 2 3]
+</code></pre>
+
+<p>注意slice和数组的区别，以及data = nil 和　data[0] = 0的不同效果．  </p>
+
+<h1>
+<a id="４闭包是传递引用的" class="anchor" href="#%EF%BC%94%E9%97%AD%E5%8C%85%E6%98%AF%E4%BC%A0%E9%80%92%E5%BC%95%E7%94%A8%E7%9A%84" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>４.闭包是传递引用的：</h1>
+
+<pre lang="golang"><code>package main
+
+import "fmt"
+
+func main() {
+        for i := 0; i &lt; 5; i++ {
+                defer fmt.Printf("%d ", i) // Output: 4 3 2 1 0
+        }
+        fmt.Printf("\n")
+        for i := 0; i &lt; 5; i++ {
+                defer func() { fmt.Printf("%d ", i) }() // Output: 5 5 5 5 5
+        }
+}
+</code></pre>
+
+<p>5 5 5 5 5 4 3 2 1 0    </p>
+
+<p>注意下面效果：   </p>
+
+<pre lang="golang"><code>package main
+
+import "fmt"
+
+func main() {
+        for i := 0; i &lt; 5; i++ {
+                defer fmt.Printf("%d ", i) // Output: 4 3 2 1 0
+        }
+        fmt.Printf("\n")
+        for i := 0; i &lt; 5; i++ {
+                defer func(i int) { fmt.Printf("%d ", i) }(i) // Output: 5 5 5 5 5
+        }
+}
+</code></pre>
+
+<p>4 3 2 1 0 4 3 2 1 0     </p>
+
+<pre lang="golang"><code>package main
+
+import "fmt"
+
+func main() {
+        for i := 0; i &lt; 5; i++ {
+                defer fmt.Printf("%d ", i) // Output: 4 3 2 1 0
+        }
+        fmt.Printf("\n")
+        for i := 0; i &lt; 5; i++ {
+                i := i
+                defer func() { fmt.Printf("%d ", i) }() // Output: 5 5 5 5 5
+        }
+}
+</code></pre>
+
+<p>4 3 2 1 0 4 3 2 1 0    </p>
+
+<p>即使用了临时变量改变了传引用．　     </p>
+
+<h1>
+<a id="communite--" class="anchor" href="#communite--" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Communite  </h1>
+
+<p>在使用中有任何问题，欢迎反馈给我，可以用以下联系方式跟我交流</p>
+
+<ul>
+<li>邮件(1031379296#qq.com, 把#换成@)</li>
+<li>QQ: 1031379296</li>
+<li>weibo: <a href="http://weibo.com/u/2786211992/home">@王发康</a>
+</li>
+</ul>
+
+<h1>
+<a id="thx" class="anchor" href="#thx" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Thx</h1>
+
+<ul>
+<li>chunshengsterATgmail.com</li>
+</ul>
+
+<h1>
+<a id="author" class="anchor" href="#author" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Author</h1>
+
+<ul>
+<li>Linux\nginx\golang\c\c++爱好者</li>
+<li>欢迎一起交流  一起学习# </li>
+<li>Others say good and Others good</li>
+</ul>
+      </section>
+      <footer>
+        <p><small>Hosted on <a href="https://pages.github.com">GitHub Pages</a> using the Dinky theme</small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+		
+  </body>
+</html>
